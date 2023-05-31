@@ -18,37 +18,60 @@ ARelaxedConeSteppingMapGenerator::ARelaxedConeSteppingMapGenerator()
 void ARelaxedConeSteppingMapGenerator::BeginPlay()
 {
 	Super::BeginPlay();
-	UCanvas *canvasForTempRT = NewObject<UCanvas>(GetTransientPackage(), NAME_None);
-	UCanvas *canvasForResultRT = NewObject<UCanvas>(GetTransientPackage(), NAME_None);
+	UCanvas *canvases[2];
+	canvases[0] = NewObject<UCanvas>(GetTransientPackage(), NAME_None);
+	canvases[1] = NewObject<UCanvas>(GetTransientPackage(), NAME_None);
 
 	UTextureRenderTarget2D* tempRT = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), 256, 256, RTF_R16f);
 	auto material = UMaterialInstanceDynamic::Create(m_material, nullptr);
-	material->SetVectorParameterValue(FName(TEXT("TexelSize")), FLinearColor(1.0f / m_reliefMap->GetSizeX(), 1.0f / m_reliefMap->GetSizeY(), m_reliefMap->GetSizeX(), m_reliefMap->GetSizeY()));
+	material->SetVectorParameterValue(FName(TEXT("TexelSize")), FLinearColor(1.0f / m_reliefMap->GetSizeX(), 1.0f / m_reliefMap->GetSizeY(), m_reliefMap->GetSizeX(), 0));
+	material->SetTextureParameterValue(FName(TEXT("ReliefMap")), m_reliefMap);
 
-	FDrawToRenderTargetContext tempRTContext, resultRTContext;
+	FDrawToRenderTargetContext contexts[2];
 	FVector2D size;
-
-	UKismetRenderingLibrary::ClearRenderTarget2D(GetWorld(), m_textureRenderTarget, FLinearColor(FColor(1, 1, 1, 1)));
-	UKismetRenderingLibrary::ClearRenderTarget2D(GetWorld(), tempRT, FLinearColor(FColor(1, 1, 1, 1)));
-	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(GetWorld(), tempRT, canvasForTempRT, size, tempRTContext);
-	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(GetWorld(), m_textureRenderTarget, canvasForResultRT, size, resultRTContext);
 
 	int texelsPerRow = m_reliefMap->GetSizeX();
 	int rowCount = m_reliefMap->GetSizeY();
 	int batchCount = rowCount / m_rowsPerDrawCall;
 	int remainingRowCount = rowCount % m_rowsPerDrawCall;
-	for(int i = 0; i < batchCount; i++)
-	{
-		material->SetTextureParameterValue(FName(TEXT("ReliefMap")), m_reliefMap);
-		material->SetTextureParameterValue(FName(TEXT("SteppingConeMap")), i % 2 == 0 ? tempRT : m_textureRenderTarget);
-		(i % 2 == 0 ? canvasForResultRT : canvasForTempRT)->K2_DrawMaterial(material, FVector2D(0, 0), FVector2D(size.X, size.Y), FVector2D(0, 0));
-	}
-//	for(int i = 0; i < remainingRowCount; i++)
-//	{
-//	}
 
-	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(GetWorld(), tempRTContext);
-	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(GetWorld(), resultRTContext);
+
+	UTextureRenderTarget2D* rTs[2];
+	//Make sure the last batch's result is stored in m_textureRenderTarget 
+	if((batchCount + (remainingRowCount == 0 ? 0 : 1)) % 2 == 0)
+	{
+		rTs[0] = m_textureRenderTarget;
+		rTs[1] = tempRT;
+	}
+	else
+	{
+		rTs[0] = tempRT;
+		rTs[1] = m_textureRenderTarget;
+	}
+
+	UKismetRenderingLibrary::ClearRenderTarget2D(GetWorld(), rTs[0], FLinearColor(FColor(1, 1, 1, 1)));
+	UKismetRenderingLibrary::ClearRenderTarget2D(GetWorld(), rTs[1], FLinearColor(FColor(1, 1, 1, 1)));
+	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(GetWorld(), rTs[0], canvases[0], size, contexts[0]);
+	UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(GetWorld(), rTs[1], canvases[1], size, contexts[1]);
+
+	material->SetScalarParameterValue(FName(TEXT("RowCount")), rowCount);
+	int i = 0;
+	for(; i < batchCount; i++)
+	{
+		material->SetTextureParameterValue(FName(TEXT("SteppingConeMap")), rTs[static_cast<int>(i % 2 == 0)]);
+		material->SetScalarParameterValue(FName(TEXT("StartingRowIndex")), i * m_rowsPerDrawCall);
+		canvases[i % 2]->K2_DrawMaterial(material, FVector2D(0, 0), FVector2D(size.X, size.Y), FVector2D(0, 0));
+	}
+	if(remainingRowCount != 0)
+	{
+		material->SetTextureParameterValue(FName(TEXT("SteppingConeMap")), rTs[static_cast<int>(i % 2 == 0)]);
+		material->SetScalarParameterValue(FName(TEXT("StartingRowIndex")), i * m_rowsPerDrawCall);
+		material->SetScalarParameterValue(FName(TEXT("RowCount")), remainingRowCount);
+		canvases[i % 2]->K2_DrawMaterial(material, FVector2D(0, 0), FVector2D(size.X, size.Y), FVector2D(0, 0));
+	}
+
+	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(GetWorld(), contexts[0]);
+	UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(GetWorld(), contexts[1]);
 //	UKismetRenderingLibrary::DrawMaterialToRenderTarget(GetWorld(), m_textureRenderTarget, material);
 }
 

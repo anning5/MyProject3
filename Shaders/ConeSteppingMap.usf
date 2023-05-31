@@ -1,9 +1,90 @@
 
-for(int i = 0; i < 64; i++)
+//float4 ComputeConeRatio()
+//{
+//	const int search_steps = 128;
+//	
+//	float3 p = float3(uv, 0);
+//	
+//	float3 o = g_Offset + p;
+//	o.z = tex2D(ReliefSampler,o.xy).w;
+//	
+//	float3 v = o - p;
+//	v /= v.z;
+//	v *= 1.0-o.z;
+//	v /= search_steps;
+//
+//	p = o;
+//
+//	for( int i=0;i<search_steps;i++ )
+//	{
+//		float d = tex2D(ReliefSampler,p.xy).w;
+//
+//		if ( d <= p.z )
+//			p += v;
+//	}
+//	float d = tex2D(ReliefSampler, uv).w;
+//	
+//	float r = length(p.xy - uv);
+//	
+//	r = (p.z >= d) ? 1.0 : r / (d - p.z);		
+//
+//	float2 texCoordInvY = uv * float2(1, -1);
+//	float best_r = Texture2DSample(ReliefMap, ReliefMapSampler, texCoordInvY).x;
+//	if ( r > best_r )
+//		r = best_r;
+//		
+//	return float4(r,r,r,r);
+//}
+
+//TexelSize: x = 1 / texture width, y = 1 / texture height, z = texture width
+
+float2 texCoordInvY = UV * float2(1, -1);
+const int search_steps = 128;
+float bestConeRatio = 1;
+
+for(int i = (int)StartingRowIndex; i < (int)StartingRowIndex + RowCount; i++)
 {
-	for(int j = 0; j < 256; j++)
+	float2 uv = float2(0, TexelSize.y * i);
+	for(int j = 0; j < (int)TexelSize.z; j++)
 	{
-		Texture2DSample(ReliefMap, ReliefMapSampler, UV) + 0.01;
+		uv.x = j * TexelSize.x;
+
+		float3 p = float3(UV, 0);
+
+		float3 o = float3(uv, 0);
+		o.z = Texture2DSample(ReliefMap, ReliefMapSampler, o.xy).w;
+
+		float3 v = o - p;
+		v /= v.z;
+		v *= 1.0 - o.z;
+		v /= search_steps;
+
+		p = o;
+
+		for(int i=0; i < search_steps; i++)
+		{
+			float d = Texture2DSample(ReliefMap, ReliefMapSampler, p.xy).w;
+
+			if (d <= p.z)
+				p += v;
+		}
+		float d = Texture2DSample(ReliefMap, ReliefMapSampler, UV).w;
+
+		float r = length(p.xy - UV);
+
+		r = (p.z >= d) ? 1.0 : r / (d - p.z);		
+
+		if (bestConeRatio > r)
+		{
+			bestConeRatio = r;
+		}
 	}
 }
-return Texture2DSample(ReliefMap, ReliefMapSampler, UV) + 0.01;
+
+float best_r = Texture2DSample(ConeSteppingMap, ConeSteppingMapSampler, texCoordInvY).x;
+if(bestConeRatio > best_r)
+{
+	bestConeRatio = best_r;
+}
+return bestConeRatio;
+//return Texture2DSample(ReliefMap, ReliefMapSampler, UV) + 0.01;
