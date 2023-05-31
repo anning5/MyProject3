@@ -3,3 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Modules/ModuleManager.h" // include this!
+
+class IncludeShaderModule : public IModuleInterface
+{
+public:
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+};
