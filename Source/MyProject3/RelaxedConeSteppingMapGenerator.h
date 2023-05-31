@@ -15,11 +15,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	UTextureRenderTarget2D* m_textureRenderTarget;
 	UPROPERTY(EditAnywhere)
-	UTexture2D* m_texture2D;
+	UTexture2D* m_reliefMap;
 	UPROPERTY(EditAnywhere)
 	UMaterialInterface* m_material;
 	UPROPERTY(EditAnywhere)
-	int m_loopCount = 100;
+	int m_rowsPerDrawCall = 1;
 
 	// Sets default values for this actor's properties
 	ARelaxedConeSteppingMapGenerator();

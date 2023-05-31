@@ -1,1 +1,9 @@
-return 		Texture2DSample(Tex, TexSampler, UV) + 0.01;
+
+for(int i = 0; i < 64; i++)
+{
+	for(int j = 0; j < 256; j++)
+	{
+		Texture2DSample(ReliefMap, ReliefMapSampler, UV) + 0.01;
+	}
+}
+return Texture2DSample(ReliefMap, ReliefMapSampler, UV) + 0.01;
