@@ -56,7 +56,7 @@ void ARelaxedConeSteppingMapGenerator::BeginPlay()
 
 	material->SetScalarParameterValue(FName(TEXT("RowCount")), rowCount);
 	int i = 0;
-	for(; i < batchCount; i++)
+	for(; i < 1; i++)
 	{
 		material->SetTextureParameterValue(FName(TEXT("SteppingConeMap")), rTs[static_cast<int>(i % 2 == 0)]);
 		material->SetScalarParameterValue(FName(TEXT("StartingRowIndex")), i * m_rowsPerDrawCall);
