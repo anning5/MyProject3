@@ -14,13 +14,9 @@ class MYPROJECT3_API ARelaxedConeSteppingMapGenerator : public AActor
 {
 	GENERATED_BODY()
 
-	FDrawToRenderTargetContext m_context;
-	FVector2D m_size;
-	FTimerHandle m_timerHandle;
 	UTextureRenderTarget2D* m_tempRT = nullptr;
-	UMaterialInstanceDynamic* m_materialInstance = nullptr;
+	UMaterialInstanceDynamic* m_coneSteppingMapGenerationMaterialInstance = nullptr;
 	UTextureRenderTarget2D* m_rTs[2] = {nullptr, nullptr};
-	UCanvas *m_canvas = nullptr;
 	int m_drawCallCount = 0;
 	int m_drawCallIndex = 0;
 	int m_remainingTexelCount = 0;
@@ -28,14 +24,15 @@ class MYPROJECT3_API ARelaxedConeSteppingMapGenerator : public AActor
 
 public:	
 	UPROPERTY(EditAnywhere)
-	bool m_generate = false;
+	bool m_generateConeSteppingMap = false;
 	UPROPERTY(EditAnywhere)
-	UTextureRenderTarget2D* m_textureRenderTarget;
+	UTextureRenderTarget2D* m_renderTargetForConeSteppingMap;
 	UPROPERTY(EditAnywhere)
 	UTexture2D* m_reliefMap;
 	UPROPERTY(EditAnywhere)
-	UMaterialInterface* m_material;
+	UMaterialInterface* m_materialForConeSteppingMapGeneration;
 	UPROPERTY(EditAnywhere)
+	//It is ideal to keep it below 30 to prevent crashing the UE editor
 	int m_texelsToProcessPerDrawCall = 20;
 
 	// Sets default values for this actor's properties

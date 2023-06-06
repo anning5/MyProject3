@@ -1,9 +1,11 @@
-const int search_steps = 128;
-float bestConeRatio = 1;
+const int SearchSteps = 128;
+float BestConeRatio = 1;
 
 float2 halfTexelSize = TexelSize.xy * 0.5;
-//return halfTexelSize.x;
-//halfTexelSize = 0;
+//TODO: Uncomment the line below to get a visually smoother result whose correctness though is still to be verified
+//halfTexelSize = 0; 
+
+//Find the best ratio from the batch of texels
 for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 {
 	int rowIndex = i / (int)TexelSize.z;
@@ -18,11 +20,12 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	float3 v = o - p;
 	v /= v.z;
 	v *= 1.0 - o.z;
-	v /= search_steps;
+	v /= SearchSteps;
 
 	p = o;
 
-	for(int j = 0; j < search_steps; j++)
+	//Keep stepping forward until we have just come out(the second intersection between the ray and the relief surface) of the relief surface
+	for(int j = 0; j < SearchSteps; j++)
 	{
 		float d = Texture2DSample(ReliefMap, ReliefMapSampler, p.xy).w;
 
@@ -31,20 +34,21 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	}
 	float d = Texture2DSample(ReliefMap, ReliefMapSampler, UV).w;
 
-	float r = length(p.xy - UV);
+	float ratio = length(p.xy - UV);
 
-	r = (p.z >= d) ? 1.0 : r / (d - p.z);		
+	ratio = (p.z >= d) ? 1.0 : ratio / (d - p.z);		
 
-	if (bestConeRatio > r)
+	if (BestConeRatio > ratio)
 	{
-		bestConeRatio = r;
+		BestConeRatio = ratio;
 	}
 }
 
-float best_r = Texture2DSample(ConeSteppingMap, ConeSteppingMapSampler, UV).x;
-if(bestConeRatio > best_r)
+//ConeSteppingMap stores the best ratio found in all previous draw calls so far, which will be compared with the best ratio found in the current draw call to get the latest best ratio
+float ratio = Texture2DSample(ConeSteppingMap, ConeSteppingMapSampler, UV).x;
+if(BestConeRatio > ratio)
 {
-	bestConeRatio = best_r;
+	BestConeRatio = ratio;
 }
 
-return bestConeRatio;
+return BestConeRatio;
