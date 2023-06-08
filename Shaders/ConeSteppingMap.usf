@@ -5,6 +5,7 @@ float2 halfTexelSize = TexelSize.xy * 0.5;
 //TODO: Uncomment the line below to get a visually smoother result whose correctness though is still to be verified
 //halfTexelSize = 0; 
 
+float currentTexelDepth = Texture2DSample(ReliefMap, ReliefMapSampler, UV).w;
 //Find the best ratio from the batch of texels
 for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 {
@@ -32,11 +33,10 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 		if (d <= p.z)
 			p += v;
 	}
-	float d = Texture2DSample(ReliefMap, ReliefMapSampler, UV).w;
 
 	float ratio = length(p.xy - UV);
 
-	ratio = (p.z >= d) ? 1.0 : ratio / (d - p.z);		
+	ratio = (p.z >= currentTexelDepth) ? 1.0 : ratio / (currentTexelDepth - p.z);		
 
 	if (BestConeRatio > ratio)
 	{
