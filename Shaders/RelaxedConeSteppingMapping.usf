@@ -1,0 +1,44 @@
+const int ConeSteps=15;
+const int BinarySteps=8;
+
+Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, UV);
+
+float3 p = float3(UV, 0);
+float3 BiNormalLS = cross(NormalLS, TangentLS);
+float3x3 tangentSpaceMatrix = float3x3(TangentLS, BiNormalLS, NormalLS);
+float3 v = normalize(PosLS - CamPosLS);
+v = mul(tangentSpaceMatrix, v);
+v.z = abs(v.z);
+
+float3 p0 = p;
+
+v /= v.z;
+
+float dist = length(v.xy);
+
+for(int i = 0; i < ConeSteps; i++)
+{
+    float4 tex = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy);
+
+    //The use of the saturate() function when calculating the distance to move guarantees that we stop on the first visited texel for which the viewing ray is under the relief surface.
+    float height = saturate(tex.g - p.z);
+
+    float coneRatio = tex.r;
+
+    p += v * (coneRatio * height / (dist + coneRatio));
+}
+
+v *= p.z * 0.5;
+p = p0 + v;
+
+for(i = 0; i < BinarySteps; i++)
+{
+    float4 tex = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy);
+    v *= 0.5;
+    if (p.z < tex.g)
+        p += v;
+    else
+        p -= v;
+}
+
+return Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy).g;

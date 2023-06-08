@@ -51,4 +51,4 @@ if(BestConeRatio > ratio)
 	BestConeRatio = ratio;
 }
 
-return BestConeRatio;
+return float4(BestConeRatio, currentTexelDepth, 0, 0);

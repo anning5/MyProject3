@@ -19,7 +19,7 @@ void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transfor
 	}
 	m_generateConeSteppingMap = false;
 	m_drawCallIndex = 0;
-	m_tempRT = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), 256, 256, RTF_RGBA8);
+	m_tempRT = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), 256, 256, RTF_RG8);
 	m_coneSteppingMapGenerationMaterialInstance = UMaterialInstanceDynamic::Create(m_materialForConeSteppingMapGeneration, nullptr);
 	m_coneSteppingMapGenerationMaterialInstance->SetVectorParameterValue(FName(TEXT("TexelSize")), FLinearColor(1.0f / m_reliefMap->GetSizeX(), 1.0f / m_reliefMap->GetSizeY(), m_reliefMap->GetSizeX(), 0));
 	m_coneSteppingMapGenerationMaterialInstance->SetTextureParameterValue(FName(TEXT("ReliefMap")), m_reliefMap);
