@@ -86,6 +86,8 @@ void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transfor
 	m_reliefMapRenderingMaterialInstance = UMaterialInstanceDynamic::Create(m_materialForReliefMapRendering, nullptr);
 	m_reliefMapRenderingMaterialInstance->SetTextureParameterValue(FName(TEXT("ReliefColorMap")), m_reliefColorMap);
 	m_reliefMapRenderingMaterialInstance->SetTextureParameterValue(FName(TEXT("RelaxedConeReliefMap")), m_renderTargetForConeSteppingMap);
+	m_reliefMapRenderingMaterialInstance->SetScalarParameterValue(FName(TEXT("DepthScale")), m_depthScale);
+
 	meshComponent->SetMaterial(0, m_reliefMapRenderingMaterialInstance);
 }
 
