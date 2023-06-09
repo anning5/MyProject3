@@ -5,7 +5,7 @@ float2 halfTexelSize = TexelSize.xy * 0.5;
 //TODO: Uncomment the line below to get a visually smoother result whose correctness though is still to be verified
 //halfTexelSize = 0; 
 
-float currentTexelDepth = Texture2DSample(ReliefMap, ReliefMapSampler, UV).w;
+float currentTexelDepth = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, UV).w;
 //Find the best ratio from the batch of texels
 for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 {
@@ -16,7 +16,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	float3 p = float3(UV, 0);
 
 	float3 o = float3(lookUpUV, 0);
-	o.z = Texture2DSample(ReliefMap, ReliefMapSampler, o.xy).w;
+	o.z = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, o.xy).w;
 
 	float3 v = o - p;
 	v /= v.z;
@@ -28,7 +28,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	//Keep stepping forward until we have just come out(the second intersection between the ray and the relief surface) of the relief surface
 	for(int j = 0; j < SearchSteps; j++)
 	{
-		float d = Texture2DSample(ReliefMap, ReliefMapSampler, p.xy).w;
+		float d = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).w;
 
 		if (d <= p.z)
 			p += v;

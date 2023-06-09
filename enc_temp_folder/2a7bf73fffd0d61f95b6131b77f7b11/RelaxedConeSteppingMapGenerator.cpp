@@ -13,16 +13,10 @@ ARelaxedConeSteppingMapGenerator::ARelaxedConeSteppingMapGenerator()
 
 void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transform)
 {
-	if(m_reliefMapRenderingMaterialInstance != nullptr)
-	{
-		m_reliefMapRenderingMaterialInstance->SetScalarParameterValue(FName(TEXT("DepthScale")), m_depthScale);
-	}
 	if(!m_generateConeSteppingMap)
 	{
 		return;
 	}
-
-	m_reliefMapRenderingMaterialInstance = nullptr;
 	m_generateConeSteppingMap = false;
 	m_drawCallIndex = 0;
 	m_tempRT = UKismetRenderingLibrary::CreateRenderTarget2D(GetWorld(), 256, 256, RTF_RG8);
@@ -82,8 +76,10 @@ void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transfor
 		}
 	}
 
+
 	UStaticMeshComponent* meshComponent = m_actorToRenderReliefMapOn->FindComponentByClass<UStaticMeshComponent>();
-	m_reliefMapRenderingMaterialInstance = UMaterialInstanceDynamic::Create(m_materialForReliefMapRendering, nullptr);
+	m_reliefMapRenderingMaterialInstance = UMaterialInstanceDynamic::Create(meshComponent->GetMaterial(0), nullptr);
+//	m_reliefMapRenderingMaterialInstance = UMaterialInstanceDynamic::Create(m_materialForReliefMapRendering, nullptr);
 	m_reliefMapRenderingMaterialInstance->SetTextureParameterValue(FName(TEXT("ReliefColorMap")), m_reliefColorMap);
 	m_reliefMapRenderingMaterialInstance->SetTextureParameterValue(FName(TEXT("RelaxedConeReliefMap")), m_renderTargetForConeSteppingMap);
 	meshComponent->SetMaterial(0, m_reliefMapRenderingMaterialInstance);

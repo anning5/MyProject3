@@ -9,6 +9,7 @@ float3x3 tangentSpaceMatrix = float3x3(TangentLS, BiNormalLS, NormalLS);
 float3 v = normalize(PosLS - CamPosLS);
 v = mul(tangentSpaceMatrix, v);
 v.z = abs(v.z);
+v.xy *= DepthScale;
 
 float3 p0 = p;
 
@@ -41,4 +42,5 @@ for(i = 0; i < BinarySteps; i++)
         p -= v;
 }
 
+return Texture2DSample(ReliefColorMap, ReliefColorMapSampler, p.xy);
 return Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy).g;
