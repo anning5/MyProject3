@@ -2,7 +2,7 @@
 
 
 #include "RelaxedConeSteppingMapGenerator.h"
-
+#pragma optimize("", off)
 // Sets default values
 ARelaxedConeSteppingMapGenerator::ARelaxedConeSteppingMapGenerator()
 {
@@ -66,6 +66,7 @@ void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transfor
 			UKismetRenderingLibrary::DrawMaterialToRenderTarget(GetWorld(), m_rTs[static_cast<int>(!rTSelector)], m_coneSteppingMapGenerationMaterialInstance);
 
 			m_drawCallIndex++;
+//			break;
 			//Process the last draw call
 			if(m_drawCallIndex == m_drawCallCount)
 			{
