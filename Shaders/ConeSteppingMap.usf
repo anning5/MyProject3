@@ -1,13 +1,16 @@
 const int SearchSteps = 128;
 float BestConeRatio = 1;
 
+float2 halfTexelSize = TexelSize.xy * 0.5;
+//halfTexelSize = 0; 
+
 float currentTexelDepth = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, UV).w;
 //Find the best ratio from the batch of texels
 for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 {
 	int rowIndex = i / (int)TexelSize.z;
 	int colomnIndex = i % (int)TexelSize.z;
-	float2 lookUpUV = float2(colomnIndex * TexelSize.x, rowIndex * TexelSize.y);
+	float2 lookUpUV = float2(colomnIndex * TexelSize.x + halfTexelSize.x, rowIndex * TexelSize.y + halfTexelSize.y);
 
 	float3 p = float3(UV, 0);
 
