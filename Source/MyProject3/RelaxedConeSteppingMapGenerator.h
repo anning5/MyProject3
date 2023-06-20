@@ -39,6 +39,8 @@ public:
 	UMaterial* m_materialForReliefMapRendering;
 	UPROPERTY(EditAnywhere)
 	AActor* m_actorToRenderReliefMapOn;
+	UPROPERTY(EditAnywhere, Blueprintable)
+	AActor* m_directinalLightActor;
 	//It is ideal to keep it below 30 to prevent crashing the UE editor
 	UPROPERTY(EditAnywhere)
 	int m_texelsToProcessPerDrawCall = 20;

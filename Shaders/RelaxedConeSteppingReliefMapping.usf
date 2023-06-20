@@ -1,11 +1,10 @@
 const int ConeSteps=15;
 const int BinarySteps=8;
 
-Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, UV);
-
 float3 p = float3(UV, 0);
 float3 BiNormalLS = cross(NormalLS, TangentLS);
 float3x3 tangentSpaceMatrix = float3x3(TangentLS, BiNormalLS, NormalLS);
+float3 directionLightTS = mul(tangentSpaceMatrix, DirectionalLightLS);
 float3 v = normalize(PosLS - CamPosLS);
 v = mul(tangentSpaceMatrix, v);
 v.z = abs(v.z);
@@ -42,5 +41,10 @@ for(i = 0; i < BinarySteps; i++)
         p -= v;
 }
 
-return Texture2DSample(ReliefColorMap, ReliefColorMapSampler, p.xy);
-return Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy).g;
+
+float originalDepth = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, UV).g;
+
+float3 normal = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).rgb * 2 - 1;
+normal.y = -normal.y;
+
+return Texture2DSample(ReliefColorMap, ReliefColorMapSampler, p.xy) * saturate(dot(normal, directionLightTS.xyz));
