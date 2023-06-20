@@ -2,7 +2,7 @@
 
 
 #include "RelaxedConeSteppingMapGenerator.h"
-
+#pragma optimize("", off)
 // Sets default values
 ARelaxedConeSteppingMapGenerator::ARelaxedConeSteppingMapGenerator()
 {
@@ -79,6 +79,12 @@ void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transfor
 		}
 	}
 
+	CreateMaterialInstance();
+}
+
+
+void ARelaxedConeSteppingMapGenerator::CreateMaterialInstance()
+{
 	UStaticMeshComponent* meshComponent = m_actorToRenderReliefMapOn->FindComponentByClass<UStaticMeshComponent>();
 	m_reliefMapRenderingMaterialInstance = UMaterialInstanceDynamic::Create(m_materialForReliefMapRendering, nullptr);
 	m_reliefMapRenderingMaterialInstance->SetTextureParameterValue(FName(TEXT("ReliefColorMap")), m_reliefColorMap);
@@ -94,11 +100,17 @@ void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transfor
 void ARelaxedConeSteppingMapGenerator::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CreateMaterialInstance();
 }
 
 // Called every frame
 void ARelaxedConeSteppingMapGenerator::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if(m_reliefMapRenderingMaterialInstance != nullptr && m_directinalLightActor != nullptr)
+	{
+		m_reliefMapRenderingMaterialInstance->SetVectorParameterValue(FName(TEXT("DirectionalLightWS")), -m_directinalLightActor->GetActorForwardVector());
+	}
 }
 

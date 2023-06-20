@@ -23,6 +23,7 @@ class MYPROJECT3_API ARelaxedConeSteppingMapGenerator : public AActor
 	int m_drawCallIndex = 0;
 	int m_remainingTexelCount = 0;
 	void OnConstruction(const FTransform& Transform);
+	void CreateMaterialInstance();
 
 public:	
 	UPROPERTY(EditAnywhere)
