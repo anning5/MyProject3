@@ -16,6 +16,7 @@ void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transfor
 	if(m_reliefMapRenderingMaterialInstance != nullptr)
 	{
 		m_reliefMapRenderingMaterialInstance->SetScalarParameterValue(FName(TEXT("DepthScale")), m_depthScale);
+		m_reliefMapRenderingMaterialInstance->SetVectorParameterValue(FName(TEXT("DirectionalLightWS")), -m_directinalLightActor->GetActorForwardVector());
 	}
 	if(!m_generateConeSteppingMap)
 	{
@@ -108,8 +109,10 @@ void ARelaxedConeSteppingMapGenerator::BeginPlay()
 void ARelaxedConeSteppingMapGenerator::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if(m_reliefMapRenderingMaterialInstance != nullptr && m_directinalLightActor != nullptr)
+
+	if(m_reliefMapRenderingMaterialInstance != nullptr)
 	{
+		m_reliefMapRenderingMaterialInstance->SetScalarParameterValue(FName(TEXT("DepthScale")), m_depthScale);
 		m_reliefMapRenderingMaterialInstance->SetVectorParameterValue(FName(TEXT("DirectionalLightWS")), -m_directinalLightActor->GetActorForwardVector());
 	}
 }
