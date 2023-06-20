@@ -55,29 +55,26 @@ void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transfor
 	UKismetRenderingLibrary::ClearRenderTarget2D(GetWorld(), m_rTs[1], FLinearColor(FColor(255, 255, 255, 255)));
 	while(m_drawCallIndex < m_drawCallCount)
 	{
-		if(m_drawCallIndex < m_drawCallCount)
-		{
-			bool rTSelector = m_drawCallIndex % 2 == 0;
-			m_coneSteppingMapGenerationMaterialInstance->SetTextureParameterValue(FName(TEXT("ConeSteppingMap")), m_rTs[static_cast<int>(rTSelector)]);
-			//With StartTexelIndex and EndTexelIndex we can process a batch of texels in each draw call
-			int startTexelIndex = m_drawCallIndex * m_texelsToProcessPerDrawCall;
-			m_coneSteppingMapGenerationMaterialInstance->SetScalarParameterValue(FName(TEXT("StartTexelIndex")), startTexelIndex);
-			m_coneSteppingMapGenerationMaterialInstance->SetScalarParameterValue(FName(TEXT("EndTexelIndex")), startTexelIndex + m_texelsToProcessPerDrawCall);
-			UKismetRenderingLibrary::DrawMaterialToRenderTarget(GetWorld(), m_rTs[static_cast<int>(!rTSelector)], m_coneSteppingMapGenerationMaterialInstance);
+		bool rTSelector = m_drawCallIndex % 2 == 0;
+		m_coneSteppingMapGenerationMaterialInstance->SetTextureParameterValue(FName(TEXT("ConeSteppingMap")), m_rTs[static_cast<int>(rTSelector)]);
+		//With StartTexelIndex and EndTexelIndex we can process a batch of texels in each draw call
+		int startTexelIndex = m_drawCallIndex * m_texelsToProcessPerDrawCall;
+		m_coneSteppingMapGenerationMaterialInstance->SetScalarParameterValue(FName(TEXT("StartTexelIndex")), startTexelIndex);
+		m_coneSteppingMapGenerationMaterialInstance->SetScalarParameterValue(FName(TEXT("EndTexelIndex")), startTexelIndex + m_texelsToProcessPerDrawCall);
+		UKismetRenderingLibrary::DrawMaterialToRenderTarget(GetWorld(), m_rTs[static_cast<int>(!rTSelector)], m_coneSteppingMapGenerationMaterialInstance);
 
-			m_drawCallIndex++;
-			//Process the last draw call
-			if(m_drawCallIndex == m_drawCallCount)
+		m_drawCallIndex++;
+		//Process the last draw call
+		if(m_drawCallIndex == m_drawCallCount)
+		{
+			if(m_remainingTexelCount != 0)
 			{
-				if(m_remainingTexelCount != 0)
-				{
-					UE_LOG(LogTemp, Display, TEXT("Finished generating the cone stepping map with %d draw calls"), m_drawCallIndex + 1);
-					m_coneSteppingMapGenerationMaterialInstance->SetTextureParameterValue(FName(TEXT("ConeSteppingMap")), m_rTs[static_cast<int>(!rTSelector)]);
-					startTexelIndex = m_drawCallIndex * m_texelsToProcessPerDrawCall;
-					m_coneSteppingMapGenerationMaterialInstance->SetScalarParameterValue(FName(TEXT("StartTexelIndex")), startTexelIndex);
-					m_coneSteppingMapGenerationMaterialInstance->SetScalarParameterValue(FName(TEXT("EndTexelIndex")), startTexelIndex + m_remainingTexelCount);
-					UKismetRenderingLibrary::DrawMaterialToRenderTarget(GetWorld(), m_rTs[static_cast<int>(rTSelector)], m_coneSteppingMapGenerationMaterialInstance);
-				}
+				UE_LOG(LogTemp, Display, TEXT("Finished generating the cone stepping map with %d draw calls"), m_drawCallIndex + 1);
+				m_coneSteppingMapGenerationMaterialInstance->SetTextureParameterValue(FName(TEXT("ConeSteppingMap")), m_rTs[static_cast<int>(!rTSelector)]);
+				startTexelIndex = m_drawCallIndex * m_texelsToProcessPerDrawCall;
+				m_coneSteppingMapGenerationMaterialInstance->SetScalarParameterValue(FName(TEXT("StartTexelIndex")), startTexelIndex);
+				m_coneSteppingMapGenerationMaterialInstance->SetScalarParameterValue(FName(TEXT("EndTexelIndex")), startTexelIndex + m_remainingTexelCount);
+				UKismetRenderingLibrary::DrawMaterialToRenderTarget(GetWorld(), m_rTs[static_cast<int>(rTSelector)], m_coneSteppingMapGenerationMaterialInstance);
 			}
 		}
 	}
