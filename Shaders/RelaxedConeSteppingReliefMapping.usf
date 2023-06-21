@@ -86,7 +86,6 @@ for(i = 0; i < BinarySteps; i++)
 }
 
 bool lit = reliefIntersection.z < p.z;
-//length(p0.xy - p.xy) > length(p0.xy - newUV);
 
 return float4(reliefColor * saturate(dot(normal, directionLightTS.xyz)) * lit, 1);
 return float4(reliefColor * lit, 1);
