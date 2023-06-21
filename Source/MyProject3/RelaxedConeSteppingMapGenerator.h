@@ -42,8 +42,6 @@ public:
 	//It is ideal to keep it below 30 to prevent crashing the UE editor
 	UPROPERTY(EditAnywhere)
 	int m_texelsToProcessPerDrawCall = 20;
-	UPROPERTY(EditAnywhere, meta=(ClampMin="0", ClampMax="1"))
-	float m_depthScale = .5f;
 
 	// Sets default values for this actor's properties
 	ARelaxedConeSteppingMapGenerator();
