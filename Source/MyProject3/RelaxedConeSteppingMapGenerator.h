@@ -23,8 +23,6 @@ class MYPROJECT3_API ARelaxedConeSteppingMapGenerator : public AActor
 	int m_drawCallIndex = 0;
 	int m_remainingTexelCount = 0;
 	void OnConstruction(const FTransform& Transform);
-	void CreateMaterialInstance();
-
 public:	
 	UPROPERTY(EditAnywhere)
 	bool m_generateConeSteppingMap = false;
@@ -40,13 +38,9 @@ public:
 	UMaterial* m_materialForReliefMapRendering;
 	UPROPERTY(EditAnywhere)
 	AActor* m_actorToRenderReliefMapOn;
-	UPROPERTY(EditAnywhere, Blueprintable)
-	AActor* m_directinalLightActor;
 	//It is ideal to keep it below 30 to prevent crashing the UE editor
 	UPROPERTY(EditAnywhere)
 	int m_texelsToProcessPerDrawCall = 20;
-	UPROPERTY(EditAnywhere, meta=(ClampMin="0", ClampMax="1"))
-	float m_depthScale = .5f;
 
 	// Sets default values for this actor's properties
 	ARelaxedConeSteppingMapGenerator();
