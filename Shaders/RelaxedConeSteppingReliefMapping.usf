@@ -42,4 +42,6 @@ for(i = 0; i < BinarySteps; i++)
 }
 
 return Texture2DSample(ReliefColorMap, ReliefColorMapSampler, p.xy);
+//return Texture2DSample(ReliefBumpMap, ReliefColorMapSampler, p.xy).w;
+
 return Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy).g;
