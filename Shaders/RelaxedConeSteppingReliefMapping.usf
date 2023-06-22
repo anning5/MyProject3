@@ -19,7 +19,11 @@ float height = saturate(reliefMapInfo.z - p.z);
 
 float tanConeAngle = tan(reliefMapInfo.y * PI / 2.0);
 float3 startPos = p + v * height / (dist * tanConeAngle + 1.0);
-p = startPos;
+
+if (UseConserveConemap != 0) 
+    p = startPos;
+else
+    startPos = p;
 
 for(int i = 0; i < ConeSteps; i++)
 {
