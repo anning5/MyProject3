@@ -1,6 +1,5 @@
 const int ConeSteps=15;
 const int BinarySteps=8;
-
 //Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, UV);
 
 float3 p = float3(UV, 0);
@@ -11,37 +10,53 @@ v = mul(tangentSpaceMatrix, v);
 v.z = abs(v.z);
 v.xy *= DepthScale;
 
-float3 p0 = p;
-
 v /= v.z;
 
 float dist = length(v.xy);
 
+float4 reliefMapInfo = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy);
+float height = saturate(reliefMapInfo.z - p.z);
+
+float tanConeAngle = tan(reliefMapInfo.y * PI / 2.0);
+float3 startPos = p + v * height / (dist * tanConeAngle + 1.0);
+p = startPos;
+
 for(int i = 0; i < ConeSteps; i++)
 {
-    float4 tex = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy);
+    float4 reliefMapInfo = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, saturate(p.xy));
 
     //The use of the saturate() function when calculating the distance to move guarantees that we stop on the first visited texel for which the viewing ray is under the relief surface.
-    float height = saturate(tex.g - p.z);
+    float height = saturate(reliefMapInfo.z - p.z);
 
-    float tanConeAngle = tan(tex.r * PI / 2.0);
+    float tanConeAngle = tan(reliefMapInfo.x * PI / 2.0);
     p += v * height / (dist * tanConeAngle + 1.0);
 }
 
-v *= p.z * 0.5;
-p = p0 + v;
+v *= (p.z - startPos.z) * 0.5;
+p = startPos + v;
 
 for(i = 0; i < BinarySteps; i++)
 {
     float4 tex = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, saturate(p.xy));
     v *= 0.5;
-    if (p.z < tex.g)
+    if (p.z < tex.z)
         p += v;
     else
         p -= v;
 }
 
-return Texture2DSample(ReliefColorMap, ReliefColorMapSampler, p.xy);
-//return Texture2DSample(ReliefBumpMap, ReliefColorMapSampler, p.xy).w;
+float4 result = float4(0, 0, 0, 0);
+if (DebugKey == 1)
+	result.xyz = Texture2DSample(ReliefBumpMap, ReliefColorMapSampler, p.xy).xyz;
+else if (DebugKey == 2)
+    result.xyz = Texture2DSample(ReliefBumpMap, ReliefColorMapSampler, p.xy).www;
+else if (DebugKey == 3)
+    result.xyz = float3(Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy).xy, 0.0);
+else if (DebugKey == 4)
+    result.xyz = float3(Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy).xxx);
+else if (DebugKey == 5)
+    result.xyz = float3(Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy).yyy);
+else
+    result.xyz = Texture2DSample(ReliefColorMap, ReliefColorMapSampler, p.xy);
 
-return Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy).g;
+return result;

@@ -1,6 +1,6 @@
 const int SearchSteps = 128;
 
-float bestInvConeRatio = 0.0;
+float2 bestInvConeRatio = 0.0;
 float2 halfTexelSize = TexelSize.xy * 0.5;
 //halfTexelSize = 0; 
 
@@ -32,30 +32,38 @@ for (int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	//Keep stepping forward until we have just come out(the second intersection between the ray and the relief surface) of the relief surface
 	for (int j = 0; j < SearchSteps - 1; j++)
 	{
-		float d = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).w;
+		float d = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, saturate(p.xy)).w;
 
 		if (d <= p.z) // is inside geometry, keep stepping.
 			p += v;
 	}
 
-	float sampleDist = length(p.xy - UV);
+	float sampleDist = length(saturate(p.xy) - UV);
 	if (sampleDist > 0.0001) // skip the same texel.
 	{
 		float invConeRatio = max(currentTexelDepth - p.z, 0.0) / sampleDist;
-		if (bestInvConeRatio < invConeRatio)
+		if (bestInvConeRatio.x < invConeRatio)
 		{
-			bestInvConeRatio = invConeRatio;
+			bestInvConeRatio.x = invConeRatio;
 		}
 	}
+
+	sampleDist = length(saturate(lookUpPos.xy) - UV);
+	if (sampleDist > 0.0001) // skip the same texel.
+	{
+		float invConeRatio = max(currentTexelDepth - lookUpPos.z, 0.0) / sampleDist;
+		if (bestInvConeRatio.y < invConeRatio)
+		{
+			bestInvConeRatio.y = invConeRatio;
+		}
+	}
+
 }
 
-float bestConeAngle = atan(bestInvConeRatio) / (PI / 2.0);
+float2 bestConeAngle = atan(bestInvConeRatio.xy) / (PI / 2.0);
 
 //ConeSteppingMap stores the best ratio found in all previous draw calls so far, which will be compared with the best ratio found in the current draw call to get the latest best ratio
-float currentConeAngle = Texture2DSample(ConeSteppingMap, ConeSteppingMapSampler, UV).x;
-if (bestConeAngle < currentConeAngle)
-{
-	bestConeAngle = currentConeAngle;
-}
+float2 currentConeAngle = Texture2DSample(ConeSteppingMap, ConeSteppingMapSampler, UV).xy;
+bestConeAngle = max(bestConeAngle, currentConeAngle);
 
-return float4(bestConeAngle, currentTexelDepth, 0, 0);
+return float4(bestConeAngle, currentTexelDepth, 0);
