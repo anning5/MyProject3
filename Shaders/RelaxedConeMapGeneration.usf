@@ -1,53 +1,61 @@
 const int SearchSteps = 128;
-float BestConeRatio = 1;
 
+float bestInvConeRatio = 0.0;
 float2 halfTexelSize = TexelSize.xy * 0.5;
 //halfTexelSize = 0; 
 
+// depth value, larger the depth, deeper the texel.
 float currentTexelDepth = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, UV).w;
+// ray origin start with depth 0.
+float3 rayOrigin = float3(UV, 0);
+
 //Find the best ratio from the batch of texels
-for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
+for (int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 {
 	int rowIndex = i / (int)TexelSize.z;
 	int colomnIndex = i % (int)TexelSize.z;
 	float2 lookUpUV = float2(colomnIndex * TexelSize.x + halfTexelSize.x, rowIndex * TexelSize.y + halfTexelSize.y);
 
-	float3 p = float3(UV, 0);
+	float3 lookUpPos = float3(lookUpUV, 0);
+	lookUpPos.z = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, lookUpPos.xy).w;
 
-	float3 o = float3(lookUpUV, 0);
-	o.z = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, o.xy).w;
-
-	float3 v = o - p;
+	// get the vector of the ray origin and sample texel.
+	float3 v = lookUpPos - rayOrigin;
+	// get intersection of ray and bottom of the relief surface.
 	v /= v.z;
-	v *= 1.0 - o.z;
+	// this vector represent from lookUpPos to the bottom of the relief surface.
+	v *= 1.0 - lookUpPos.z;
+	// get the step vector.
 	v /= SearchSteps;
 
-	p = o;
-
+	float3 p = lookUpPos + v;
 	//Keep stepping forward until we have just come out(the second intersection between the ray and the relief surface) of the relief surface
-	for(int j = 0; j < SearchSteps; j++)
+	for (int j = 0; j < SearchSteps - 1; j++)
 	{
 		float d = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).w;
 
-		if (d <= p.z)
+		if (d <= p.z) // is inside geometry, keep stepping.
 			p += v;
 	}
 
-	float ratio = length(p.xy - UV);
-
-	ratio = (p.z >= currentTexelDepth) ? 1.0 : ratio / (currentTexelDepth - p.z);		
-
-	if (BestConeRatio > ratio)
+	float sampleDist = length(p.xy - UV);
+	if (sampleDist > 0.0001) // skip the same texel.
 	{
-		BestConeRatio = ratio;
+		float invConeRatio = max(currentTexelDepth - p.z, 0.0) / sampleDist;
+		if (bestInvConeRatio < invConeRatio)
+		{
+			bestInvConeRatio = invConeRatio;
+		}
 	}
 }
 
+float bestConeAngle = atan(bestInvConeRatio) / (PI / 2.0);
+
 //ConeSteppingMap stores the best ratio found in all previous draw calls so far, which will be compared with the best ratio found in the current draw call to get the latest best ratio
-float ratio = Texture2DSample(ConeSteppingMap, ConeSteppingMapSampler, UV).x;
-if(BestConeRatio > ratio)
+float currentConeAngle = Texture2DSample(ConeSteppingMap, ConeSteppingMapSampler, UV).x;
+if (bestConeAngle < currentConeAngle)
 {
-	BestConeRatio = ratio;
+	bestConeAngle = currentConeAngle;
 }
 
-return float4(BestConeRatio, currentTexelDepth, 0, 0);
+return float4(bestConeAngle, currentTexelDepth, 0, 0);

@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "MyProject3Character.h"
+#include "RelaxedConemapCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -12,9 +12,9 @@
 
 
 //////////////////////////////////////////////////////////////////////////
-// AMyProject3Character
+// ARelaxedConemapCharacter
 
-AMyProject3Character::AMyProject3Character()
+ARelaxedConemapCharacter::ARelaxedConemapCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -51,7 +51,7 @@ AMyProject3Character::AMyProject3Character()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
-void AMyProject3Character::BeginPlay()
+void ARelaxedConemapCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
@@ -69,7 +69,7 @@ void AMyProject3Character::BeginPlay()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void AMyProject3Character::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void ARelaxedConemapCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
@@ -79,16 +79,16 @@ void AMyProject3Character::SetupPlayerInputComponent(class UInputComponent* Play
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		//Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyProject3Character::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ARelaxedConemapCharacter::Move);
 
 		//Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyProject3Character::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ARelaxedConemapCharacter::Look);
 
 	}
 
 }
 
-void AMyProject3Character::Move(const FInputActionValue& Value)
+void ARelaxedConemapCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -111,7 +111,7 @@ void AMyProject3Character::Move(const FInputActionValue& Value)
 	}
 }
 
-void AMyProject3Character::Look(const FInputActionValue& Value)
+void ARelaxedConemapCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();

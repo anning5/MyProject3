@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "MyProject3.h"
+#include "RelaxedConemap.h"
 #include "Modules/ModuleManager.h"
 #include "Misc/Paths.h" // include this!
 
@@ -16,5 +16,5 @@ void IncludeShaderModule::StartupModule()
 
 void IncludeShaderModule::ShutdownModule() {}
 
-//IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, MyProject3, "MyProject3" );
+//IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, RelaxedConemap, "RelaxedConemap" );
 IMPLEMENT_PRIMARY_GAME_MODULE(IncludeShaderModule, Project, "Project"); // edit this!
