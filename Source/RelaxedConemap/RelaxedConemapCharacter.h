@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-#include "MyProject3Character.generated.h"
+#include "RelaxedConemapCharacter.generated.h"
 
 
 UCLASS(config=Game)
-class AMyProject3Character : public ACharacter
+class ARelaxedConemapCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -38,7 +38,7 @@ class AMyProject3Character : public ACharacter
 	class UInputAction* LookAction;
 
 public:
-	AMyProject3Character();
+	ARelaxedConemapCharacter();
 	
 
 protected:

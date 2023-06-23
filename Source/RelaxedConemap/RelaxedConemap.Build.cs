@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class MyProject3 : ModuleRules
+public class RelaxedConemap : ModuleRules
 {
-	public MyProject3(ReadOnlyTargetRules Target) : base(Target)
+	public RelaxedConemap(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 

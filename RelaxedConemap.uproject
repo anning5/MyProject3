@@ -1,11 +1,11 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.2",
+	"EngineAssociation": "{E757CABE-4A4F-BEB0-A4B2-9EA692903835}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
 		{
-			"Name": "MyProject3",
+			"Name": "RelaxedConemap",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
