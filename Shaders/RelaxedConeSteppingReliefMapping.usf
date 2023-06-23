@@ -1,8 +1,8 @@
 const int ConeSteps=15;
 const int BinarySteps=8;
-//Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, UV);
 
-float3 p = float3(UV, 0);
+float3 p0 = float3(UV, 0);
+
 float3 BiNormalLS = cross(NormalLS, TangentLS);
 float3x3 tangentSpaceMatrix = float3x3(TangentLS, BiNormalLS, NormalLS);
 float3 v = normalize(PosLS - CamPosLS);
@@ -12,44 +12,74 @@ v.xy *= DepthScale;
 
 v /= v.z;
 
+float scaleX = 1.0;
+if (v.x > 0.0 && p0.x + v.x > 1.0) 
+{
+	scaleX = (1.0 - p0.x) / v.x;
+}
+
+if (v.x < 0.0 && p0.x + v.x < 0.0)
+{
+    scaleX = p0.x / (-v.x);
+}
+
+float3 clampedV = v * scaleX;
+
+float scaleY = 1.0;
+if (clampedV.y > 0.0 && p0.y + clampedV.y > 1.0) 
+{
+    scaleY = (1.0 - p0.y) / clampedV.y;
+	
+}
+
+if (clampedV.y < 0.0 && p0.y + clampedV.y < 0.0)
+{
+	scaleY = p0.y / (-clampedV.y);
+}
+
+clampedV = clampedV * scaleY;
+
 float dist = length(v.xy);
 
-float4 reliefMapInfo = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy);
-float height = saturate(reliefMapInfo.z - p.z);
+float4 reliefMapInfo = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p0.xy);
+float height = saturate(reliefMapInfo.z - p0.z);
 
 float tanConeAngle = tan(reliefMapInfo.y * PI / 2.0);
-float3 startPos = p + v * height / (dist * tanConeAngle + 1.0);
+float startZ = UseConserveConemap == 0 ? 0.0 : min(height / (dist * tanConeAngle + 1.0), clampedV.z);
+float castZ = startZ;
 
-if (UseConserveConemap != 0) 
-    p = startPos;
-else
-    startPos = p;
-
+float3 p = p0;
 for(int i = 0; i < ConeSteps; i++)
 {
-    float4 reliefMapInfo = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, saturate(p.xy));
+    p = p0 + v * castZ;
+    float4 reliefMapInfo = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy);
 
     //The use of the saturate() function when calculating the distance to move guarantees that we stop on the first visited texel for which the viewing ray is under the relief surface.
     float height = saturate(reliefMapInfo.z - p.z);
 
     float tanConeAngle = tan(reliefMapInfo.x * PI / 2.0);
-    p += v * height / (dist * tanConeAngle + 1.0);
+    castZ = min(castZ + height / (dist * tanConeAngle + 1.0), clampedV.z);
 }
 
-v *= (p.z - startPos.z) * 0.5;
-p = startPos + v;
+float stepZ = (castZ - startZ) * 0.5;
+float currentZ = startZ + stepZ;
 
 for(i = 0; i < BinarySteps; i++)
 {
-    float4 tex = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, saturate(p.xy));
-    v *= 0.5;
+    p = p0 + v * currentZ;
+    float4 tex = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy);
+    stepZ *= 0.5;
     if (p.z < tex.z)
-        p += v;
+        currentZ += stepZ;
     else
-        p -= v;
+        currentZ -= stepZ;
 }
 
 float4 result = float4(0, 0, 0, 0);
+
+//float4 currentReliefMapInfo = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p0.xy);
+//result.xyz = float3(currentReliefMapInfo.z > 0 ? currentReliefMapInfo.xxx : float3(1, 0, 0));
+
 if (DebugKey == 1)
 	result.xyz = Texture2DSample(ReliefBumpMap, ReliefColorMapSampler, p.xy).xyz;
 else if (DebugKey == 2)
