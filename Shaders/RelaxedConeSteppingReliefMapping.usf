@@ -22,8 +22,12 @@ float3 reliefColor = Texture2DSample(ReliefColorMap, ReliefColorMapSampler, reli
 float3 normal = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, reliefIntersection.xy).rgb * 2 - 1;
 normal.y = -normal.y;
 
-//Run the relaxed cone stepping for the shadowing calculation
+float3 diffuse = 0, cosTheta = 0, depthBias;
+
+//Run the relaxed cone stepping for the directional light's shadowing calculation
 float3 directionLightTS = normalize(mul(tangentSpaceMatrix, DirectionalLightLS));
+//diffuse += saturate(dot(normal, directionLightTS.xyz));
+
 v = -directionLightTS;
 v.z = abs(v.z);
 
@@ -32,12 +36,49 @@ p += p.z / v.z * -v;//Find the starting point from the light direction
 RelaxedConeStepping(v, p, ConeSteps, BinarySteps, RelaxedConeReliefMap, RelaxedConeReliefMapSampler);
 
 //Below is an optimisation of saturate(dot(float3(0, 0, 1), directionLightTS.xyz))
-float cosTheta = saturate(directionLightTS.z);
+cosTheta = saturate(directionLightTS.z);
 
-float bias = max(.04, tan(acos(cosTheta)) * 0.005);
-float shadow = lerp(1, 0.05, (reliefIntersection.z - bias) > p.z);
-float3 diffuse = reliefColor * saturate(dot(normal, directionLightTS.xyz));
+depthBias = max(.04, tan(acos(cosTheta)) * 0.005);
+float directionalLightShadow = lerp(1, 0.05, (reliefIntersection.z - depthBias) > p.z);
 
-return float4(diffuse * shadow, 1);
+float shadow = 1;
+//shadow = directionalLightShadow;
+
+//Run the relaxed cone stepping for the point light's shadowing calculation
+reliefIntersection.z = -reliefIntersection.z;//The intersection point has a negative z in the tangent space
+float3 pointLightTS = PointLightPosTS - reliefIntersection;
+reliefIntersection.z = -reliefIntersection.z;
+
+float3 pointLightDistance = length(pointLightTS);
+return float4(normal, 1);
+
+v = -pointLightTS;
+v.z = abs(v.z);
+if(v.z > p.z)//If the point light is above the relief surface clamp it to the relief surface level which is at height 0
+{
+	p += p.z / v.z * -v;//Find the starting point from the light direction
+}
+else
+{
+	p += -v;
+}
+
+//p += p.z / v.z * -v;//Find the starting point from the light direction
+//p -= v;//Find the starting point from the light direction
+
+RelaxedConeStepping(v, p, ConeSteps, BinarySteps, RelaxedConeReliefMap, RelaxedConeReliefMapSampler);
+
+pointLightTS = normalize(pointLightTS);
+diffuse += saturate(dot(normal, pointLightTS)) / (pointLightDistance * pointLightDistance);
+
+//Below is an optimisation of saturate(dot(float3(0, 0, 1), directionLightTS.xyz))
+cosTheta = saturate(pointLightTS.z);
+
+depthBias = max(.04, tan(acos(cosTheta)) * 0.005);
+float pointLightShadow = lerp(1, 0.05, (reliefIntersection.z - depthBias) > p.z);
+shadow = pointLightShadow;
+
+return float4(reliefColor * diffuse, 1);
+return float4(reliefColor * diffuse * shadow, 1);
 return float4(diffuse, 1);
 
