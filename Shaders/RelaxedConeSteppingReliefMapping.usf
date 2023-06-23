@@ -85,7 +85,11 @@ for(i = 0; i < BinarySteps; i++)
         p -= v;
 }
 
-bool lit = reliefIntersection.z < p.z;
+//Below is an optimisation of saturate(dot(float3(0, 0, 1), directionLightTS.xyz))
+float cosTheta = saturate(directionLightTS.z);
+
+float bias = max(.04, tan(acos(cosTheta)) * 0.005);
+bool lit = (-bias + reliefIntersection.z) < p.z;
 
 return float4(reliefColor * saturate(dot(normal, directionLightTS.xyz)) * lit, 1);
 return float4(reliefColor * lit, 1);
