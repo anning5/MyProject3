@@ -1,3 +1,4 @@
+//A forward declaration of the external relaxed cone stepping function
 void RelaxedConeStepping(float3 v, inout float3 p, const int ConeSteps, const int BinarySteps, Texture2D RelaxedConeReliefMap, SamplerState RelaxedConeReliefMapSampler);
 
 const int ConeSteps=15;
