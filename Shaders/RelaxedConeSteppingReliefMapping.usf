@@ -44,7 +44,7 @@ RelaxedConeStepping(v, p, ConeSteps, BinarySteps, RelaxedConeReliefMap, RelaxedC
 cosTheta = saturate(directionalLightTS.z);
 
 depthBias = max(.04, tan(acos(cosTheta)) * 0.005);
-float directionalLightShadow = lerp(0, 0.9, (reliefIntersection.z - depthBias) > p.z);
+float directionalLightShadow = 0.9 * ((reliefIntersection.z - depthBias) > p.z);
 
 float shadow = 1;
 shadow -= directionalLightShadow;
@@ -75,7 +75,7 @@ diffuse += pointLightDiffuse;
 cosTheta = saturate(pointLightDirectionTS.z);
 
 depthBias = max(.04, tan(acos(cosTheta)) * 0.005);
-float pointLightShadow = lerp(0, 0.9, (reliefIntersection.z - depthBias) > p.z);
+float pointLightShadow = 0.9 * ((reliefIntersection.z - depthBias) > p.z);
 shadow -= pointLightShadow;
 
 return float4(reliefColor * diffuse * shadow, 1);
