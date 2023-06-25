@@ -22,7 +22,7 @@ void RelaxedConeStepping(float3 v, inout float3 p, const int ConeSteps, const in
 
 	for(i = 0; i < BinarySteps; i++)
 	{
-		float4 tex = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, p.xy);
+		float4 tex = Texture2DSample(RelaxedConeReliefMap, RelaxedConeReliefMapSampler, saturate(p.xy));
 		v *= 0.5;
 		if (p.z < tex.g)
 			p += v;
