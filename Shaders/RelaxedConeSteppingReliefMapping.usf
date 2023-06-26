@@ -9,7 +9,7 @@ float3 BiNormalLS = cross(NormalLS, TangentLS);
 float3x3 tangentSpaceMatrix = float3x3(TangentLS, BiNormalLS, NormalLS);
 
 //Run the relaxed cone stepping to find the new relief UV
-float3 v = normalize(PosLS - CamPosLS);
+float3 v = PosLS - CamPosLS;
 v = mul(tangentSpaceMatrix, v);
 v.z = abs(v.z);
 v.xy *= DepthScale;
@@ -21,6 +21,7 @@ float3 reliefIntersection = p;
 float3 reliefColor = Texture2DSample(ReliefColorMap, ReliefColorMapSampler, reliefIntersection.xy).rgb;
 float3 normal = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, saturate(reliefIntersection.xy)).rgb * 2 - 1;
 normal.y = -normal.y;
+//normal.z /= DepthScale;
 
 float3 diffuse = 0, cosTheta, depthBias;
 
