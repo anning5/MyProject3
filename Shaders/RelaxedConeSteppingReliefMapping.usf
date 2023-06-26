@@ -21,7 +21,7 @@ float3 reliefIntersection = p;
 float3 reliefColor = Texture2DSample(ReliefColorMap, ReliefColorMapSampler, reliefIntersection.xy).rgb;
 float3 normal = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, saturate(reliefIntersection.xy)).rgb * 2 - 1;
 normal.y = -normal.y;
-normal.z /= DepthScale;
+normal.xy *= DepthScale;
 normal = normalize(normal);
 
 float3 diffuse = 0, cosTheta, depthBias;
@@ -31,12 +31,14 @@ float3 diffuse = 0, cosTheta, depthBias;
 ////////////////////////////////////////////////////////////////////////////////
 
 float3 directionalLightTS = mul(tangentSpaceMatrix, DirectionalLightLS);
-directionalLightTS.xy *= DepthScale;
 directionalLightTS = normalize(directionalLightTS);
 
 float3 directionalLightDiffuse = saturate(dot(normal, directionalLightTS.xyz));
 directionalLightDiffuse *= dot(NormalLS, directionalLightTS) > 0;//Make sure the light coming from the back of the relief does not light the relief
 diffuse += directionalLightDiffuse;
+
+directionalLightTS.xy *= DepthScale;
+
 
 v = -directionalLightTS;
 v.z = abs(v.z);
@@ -46,6 +48,7 @@ p -= p.z / v.z * v;//Find the starting point from the light direction
 RelaxedConeStepping(v, p, ConeSteps, BinarySteps, RelaxedConeReliefMap, RelaxedConeReliefMapSampler);
 
 //Below is an optimisation of saturate(dot(float3(0, 0, 1), directionalLightTS.xyz))
+directionalLightTS = normalize(directionalLightTS);
 cosTheta = saturate(directionalLightTS.z);
 
 depthBias = max(.04, tan(acos(cosTheta)) * 0.005);
@@ -59,11 +62,18 @@ shadow -= directionalLightShadow;
 ////////////////////////////////////////////////////////////////////////////////
 p = reliefIntersection;
 reliefIntersection.z = -reliefIntersection.z;//The intersection point has a negative z in the tangent space
-float3 pointLightDirectionTS = PointLightPosTS - reliefIntersection;
-pointLightDirectionTS.xy *= DepthScale;
-reliefIntersection.z = -reliefIntersection.z;
+reliefIntersection.z *= DepthScale;
 
+float3 pointLightDirectionTS = PointLightPosTS - reliefIntersection;
 float3 pointLightDistance = length(pointLightDirectionTS);
+pointLightDirectionTS = normalize(pointLightDirectionTS);
+
+float3 pointLightDiffuse = saturate(dot(normal, pointLightDirectionTS)) / (pointLightDistance * pointLightDistance);
+pointLightDiffuse *= dot(NormalLS, pointLightDirectionTS) > 0;//Make sure the light coming from the back of the relief does not light the relief
+diffuse += pointLightDiffuse;
+
+reliefIntersection.z = p.z;
+pointLightDirectionTS.xy *= DepthScale;
 
 v = -pointLightDirectionTS;
 v.z = abs(v.z);
@@ -71,21 +81,17 @@ p -= p.z / v.z * v;//Find the starting point from the light direction
 
 RelaxedConeStepping(v, p, ConeSteps, BinarySteps, RelaxedConeReliefMap, RelaxedConeReliefMapSampler);
 
-pointLightDirectionTS = normalize(pointLightDirectionTS);
-
-float3 pointLightDiffuse = saturate(dot(normal, pointLightDirectionTS)) / (pointLightDistance * pointLightDistance);
-pointLightDiffuse *= dot(NormalLS, pointLightDirectionTS) > 0;//Make sure the light coming from the back of the relief does not light the relief
-diffuse += pointLightDiffuse;
 
 //Below is an optimisation of saturate(dot(float3(0, 0, 1), pointLightDirectionTS.xyz))
+pointLightDirectionTS = normalize(pointLightDirectionTS);
 cosTheta = saturate(pointLightDirectionTS.z);
 
 depthBias = max(.04, tan(acos(cosTheta)) * 0.005);
 float pointLightShadow = 0.9 * ((reliefIntersection.z - depthBias) > p.z);
 shadow -= pointLightShadow;
 
-return float4(reliefColor * shadow, 1);
 return float4(reliefColor * diffuse * shadow, 1);
 return float4(reliefColor * diffuse, 1);
+return float4(reliefColor * shadow, 1);
 return float4(reliefColor, 1);
 
