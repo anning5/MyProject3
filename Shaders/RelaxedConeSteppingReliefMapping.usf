@@ -29,7 +29,10 @@ float3 diffuse = 0, cosTheta, depthBias;
 ////////////////////////////////////////////////////////////////////////////////
 //Run the relaxed cone stepping for the directional light's shadowing calculation
 ////////////////////////////////////////////////////////////////////////////////
-float3 directionalLightTS = normalize(mul(tangentSpaceMatrix, DirectionalLightLS));
+
+float3 directionalLightTS = mul(tangentSpaceMatrix, DirectionalLightLS);
+directionalLightTS.xy *= DepthScale;
+directionalLightTS = normalize(directionalLightTS);
 
 float3 directionalLightDiffuse = saturate(dot(normal, directionalLightTS.xyz));
 directionalLightDiffuse *= dot(NormalLS, directionalLightTS) > 0;//Make sure the light coming from the back of the relief does not light the relief
@@ -57,6 +60,7 @@ shadow -= directionalLightShadow;
 p = reliefIntersection;
 reliefIntersection.z = -reliefIntersection.z;//The intersection point has a negative z in the tangent space
 float3 pointLightDirectionTS = PointLightPosTS - reliefIntersection;
+pointLightDirectionTS.xy *= DepthScale;
 reliefIntersection.z = -reliefIntersection.z;
 
 float3 pointLightDistance = length(pointLightDirectionTS);
@@ -80,8 +84,8 @@ depthBias = max(.04, tan(acos(cosTheta)) * 0.005);
 float pointLightShadow = 0.9 * ((reliefIntersection.z - depthBias) > p.z);
 shadow -= pointLightShadow;
 
+return float4(reliefColor * shadow, 1);
 return float4(reliefColor * diffuse * shadow, 1);
 return float4(reliefColor * diffuse, 1);
-return float4(reliefColor * shadow, 1);
 return float4(reliefColor, 1);
 
