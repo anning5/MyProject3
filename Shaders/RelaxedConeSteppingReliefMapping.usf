@@ -35,7 +35,7 @@ float3 directionalLightTS = mul(tangentSpaceMatrix, DirectionalLightLS);
 directionalLightTS = normalize(directionalLightTS);
 
 float3 directionalLightDiffuse = saturate(dot(normal, directionalLightTS.xyz));
-directionalLightDiffuse *= dot(NormalLS, directionalLightTS) > 0;//Make sure the light coming from the back of the relief does not light the relief
+directionalLightDiffuse *= directionalLightTS.z > 0;//Make sure the light coming from the back of the relief does not light the relief 
 diffuse += directionalLightDiffuse;
 
 directionalLightTS.xy *= DepthScale;
@@ -69,7 +69,7 @@ float3 pointLightDistance = length(pointLightDirectionTS);
 pointLightDirectionTS = normalize(pointLightDirectionTS);
 
 float3 pointLightDiffuse = saturate(dot(normal, pointLightDirectionTS)) / (pointLightDistance * pointLightDistance);
-pointLightDiffuse *= dot(NormalLS, pointLightDirectionTS) > 0;//Make sure the light coming from the back of the relief does not light the relief
+pointLightDiffuse *= directionalLightTS.z > 0;//Make sure the light coming from the back of the relief does not light the relief
 diffuse += pointLightDiffuse;
 
 reliefIntersection.z = p.z;
