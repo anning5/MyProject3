@@ -91,7 +91,7 @@ float pointLightShadow = 0.9 * ((reliefIntersection.z - depthBias) > p.z);
 shadow -= pointLightShadow;
 
 return float4(reliefColor * diffuse * shadow, 1);
+return float4(reliefColor, 1);
 return float4(reliefColor * shadow, 1);
 return float4(reliefColor * diffuse, 1);
-return float4(reliefColor, 1);
 

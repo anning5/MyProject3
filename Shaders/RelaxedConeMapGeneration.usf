@@ -2,7 +2,6 @@ const int SearchSteps = 128;
 float BestConeRatio = 1;
 
 float2 halfTexelSize = TexelSize.xy * 0.5;
-//halfTexelSize = 0; 
 
 float currentTexelDepth = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, UV).w;
 //Find the best ratio from the batch of texels
@@ -32,28 +31,30 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 		if (d <= p.z)
 			p += v;
 	}
-//	if(abs(p.x) < 0.01)
-//	{
-//		p.z = .07843;
-//	}
-	
-	int steps = 128;
-	v = (o - p) / steps;
-	float3 p1 = o;
-	for(int j = 0; j < steps; j++)
+
+	float ratio = length(p.xy - UV), ratio1 = length(p.xy - UV);
+	if(p.z - currentTexelDepth > -.001)//The -.001 here is to add some floating point error tolerance
 	{
-		p += v;
-		float depth = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).w;
-		if(depth < p1.z)
-		{
-			p1 = p;
-		}
+		ratio = 1;
 	}
-	p = p1;
+	else
+	{
+		int steps = 128;
+		v = (o - p) / steps;
+		for(int j = 0; j < steps; j++)
+		{
+			p += v;
+			float depth = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).w;
+			if(depth < o.z)
+			{
+				o = p;
+			}
+		}
+		p = o;
 
-	float ratio = length(p.xy - UV);
-
-	ratio = (p.z >= currentTexelDepth) ? 1.0 : ratio / (currentTexelDepth - p.z);		
+		ratio = length(p.xy - UV);
+		ratio = ratio / (currentTexelDepth - p.z);
+	}
 
 	if (BestConeRatio > ratio)
 	{
