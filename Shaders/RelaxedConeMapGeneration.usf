@@ -32,7 +32,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 			p += v;
 	}
 
-	float ratio = length(p.xy - UV), ratio1 = length(p.xy - UV);
+	float ratio = length(p.xy - UV);
 	if(p.z - currentTexelDepth > -.001)//The -.001 here is to add some floating point error tolerance
 	{
 		ratio = 1;
