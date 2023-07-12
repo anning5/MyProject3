@@ -41,16 +41,18 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	{
 		int steps = 128;
 		v = (o - p) / steps;
+		float3 minP = p;
 		for(int j = 0; j < steps; j++)
 		{
 			p += v;
 			float depth = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).w;
-			if(depth < o.z)
+			if(depth < minP.z)
 			{
-				o = p;
+				minP.xy = p.xy;
+				minP.z = depth;
 			}
 		}
-		p = o;
+		p = minP;
 
 		ratio = length(p.xy - UV);
 		ratio = ratio / (currentTexelDepth - p.z);
