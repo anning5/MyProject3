@@ -24,6 +24,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	p = o;
 
 	//Keep stepping forward until we have just come out(the second intersection between the ray and the relief surface) of the relief surface
+	[loop]
 	for(int j = 0; j < SearchSteps; j++)
 	{
 		float d = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).w;
@@ -33,6 +34,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	}
 
 	float ratio = length(p.xy - UV);
+
 	if(p.z - currentTexelDepth > -.001)//The -.001 here is to add some floating point error tolerance
 	{
 		ratio = 1;
