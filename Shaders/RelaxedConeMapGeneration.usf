@@ -3,8 +3,9 @@ float BestConeRatio = 1;
 
 float2 halfTexelSize = TexelSize.xy * 0.5;
 
-float currentTexelDepth = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, UV).w;
+float currentTexelDepth = Texture2DSampleLevel(ReliefBumpMap, ReliefBumpMapSampler, UV, 0).w;
 //Find the best ratio from the batch of texels
+[loop]
 for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 {
 	int rowIndex = i / (int)TexelSize.z;
@@ -14,7 +15,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	float3 p = float3(UV, 0);
 
 	float3 o = float3(lookUpUV, 0);
-	o.z = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, o.xy).w;
+	o.z = Texture2DSampleLevel(ReliefBumpMap, ReliefBumpMapSampler, o.xy, 0).w;
 
 	float3 v = o - p;
 	v /= v.z;
@@ -27,7 +28,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	[loop]
 	for(int j = 0; j < SearchSteps; j++)
 	{
-		float d = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).w;
+		float d = Texture2DSampleLevel(ReliefBumpMap, ReliefBumpMapSampler, p.xy, 0).w;
 
 		if (d <= p.z)
 			p += v;
@@ -44,16 +45,18 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 		int steps = 128;
 		v = (o - p) / steps;
 		float3 minP = p;
+		[loop]
 		for(int j = 0; j < steps; j++)
 		{
 			p += v;
-			float depth = Texture2DSample(ReliefBumpMap, ReliefBumpMapSampler, p.xy).w;
+			float depth = Texture2DSampleLevel(ReliefBumpMap, ReliefBumpMapSampler, p.xy, 0).w;
 			if(depth < minP.z)
 			{
 				minP.xy = p.xy;
 				minP.z = depth;
 			}
 		}
+
 		p = minP;
 
 		ratio = length(p.xy - UV);
@@ -67,7 +70,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 }
 
 //ConeSteppingMap stores the best ratio found in all previous draw calls so far, which will be compared with the best ratio found in the current draw call to get the latest best ratio
-float ratio = Texture2DSample(ConeSteppingMap, ConeSteppingMapSampler, UV).x;
+float ratio = Texture2DSampleLevel(ConeSteppingMap, ConeSteppingMapSampler, UV, 0).x;
 if(BestConeRatio > ratio)
 {
 	BestConeRatio = ratio;
