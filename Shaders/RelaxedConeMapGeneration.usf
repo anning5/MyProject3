@@ -1,5 +1,6 @@
 const int SearchSteps = 128;
 float BestConeRatio = 1;
+const float Epsilon = .000001;//This is to make sure the starting point of the ray marching is always above all points in the relief map. Without this Epsilon a type of "crack" artefact will occur when the surface depth is 0 in the relief making the view vector completely horizontal causing the division by 0 error
 
 float2 halfTexelSize = TexelSize.xy * 0.5;
 
@@ -18,7 +19,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	o.z = Texture2DSampleLevel(ReliefBumpMap, ReliefBumpMapSampler, o.xy, 0).w;
 
 	float3 v = o - p;
-	v /= v.z;
+	v /= max(v.z, Epsilon);
 	v *= 1.0 - o.z;
 	v /= SearchSteps;
 
@@ -31,7 +32,20 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 		float d = Texture2DSampleLevel(ReliefBumpMap, ReliefBumpMapSampler, p.xy, 0).w;
 
 		if (d <= p.z)
+		{
 			p += v;
+
+			//Confine the ray marching within the relief map's [0-1] range to avoid the depth outside the range taken to corrupt the cone calculation
+			float2 saturatedPXY = saturate(p.xy);
+			if(p.x != saturatedPXY.x)
+			{
+				p -= (p.x - saturatedPXY.x) / v.x * v;
+			}
+			else if(p.y != saturatedPXY.y)
+			{
+				p -= (p.y - saturatedPXY.y) / v.y * v;
+			}
+		}
 	}
 
 	float ratio = length(p.xy - UV);
