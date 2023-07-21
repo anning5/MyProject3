@@ -56,6 +56,7 @@ for(int i = (int)StartTexelIndex; i < (int)EndTexelIndex; i++)
 	}
 	else
 	{
+		//This loop is a trackback logic to fix a type of "crack" artefact caused by the limitation of the relaxed cone stepping algorithm
 		int steps = 128;
 		v = (o - p) / steps;
 		float3 minP = p;
