@@ -2,7 +2,6 @@
 
 
 #include "RelaxedConeSteppingMapGenerator.h"
-#pragma optimize("", off)
 // Sets default values
 ARelaxedConeSteppingMapGenerator::ARelaxedConeSteppingMapGenerator()
 {
