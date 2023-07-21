@@ -37,7 +37,6 @@ void ARelaxedConeSteppingMapGenerator::OnConstruction(const FTransform& Transfor
 	UKismetRenderingLibrary::ClearRenderTarget2D(GetWorld(), m_renderTargetForConeSteppingMap, FLinearColor(FColor(255, 255, 255, 255)));
 	while(m_drawCallIndex < m_drawCallCount)
 	{
-		bool rTSelector = m_drawCallIndex % 2 == 0;
 		m_coneSteppingMapGenerationMaterialInstance->SetTextureParameterValue(FName(TEXT("ConeSteppingMap")), m_renderTargetForConeSteppingMap);
 		//With StartTexelIndex and EndTexelIndex we can process a batch of texels in each draw call
 		int startTexelIndex = m_drawCallIndex * m_texelsToProcessPerDrawCall;
