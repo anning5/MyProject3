@@ -15,7 +15,6 @@ class MYPROJECT3_API ARelaxedConeSteppingMapGenerator : public AActor
 {
 	GENERATED_BODY()
 
-	UTextureRenderTarget2D* m_tempRT = nullptr;
 	UMaterialInstanceDynamic* m_coneSteppingMapGenerationMaterialInstance = nullptr;
 	UMaterialInstanceDynamic* m_reliefMapRenderingMaterialInstance = nullptr;
 	int m_drawCallCount = 0;
